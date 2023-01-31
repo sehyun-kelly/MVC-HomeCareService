@@ -42,6 +42,9 @@ namespace HomeCareService.Controllers
         // GET: Customers/Create
         public ActionResult Create()
         {
+            var customer = new Customer();
+            customer.Services = new List<Service>();
+            PopulateAddedServiceData(customer);
             return View();
         }
 
@@ -50,8 +53,21 @@ namespace HomeCareService.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "ID,Name,Address")] Customer customer)
+        public async Task<ActionResult> Create([Bind(Include = "Name,Address")] Customer customer, string[] selectedServices)
         {
+            if(selectedServices != null)
+            {
+                customer.Services = new List<Service>();
+                int price = 0;
+                foreach(var service in selectedServices)
+                {
+                    var serviceToAdd = db.Services.Find(int.Parse(service));
+                    price += serviceToAdd.Price;
+                    customer.Services.Add(serviceToAdd);
+                }
+                customer.Payment = price;
+            }
+
             if (ModelState.IsValid)
             {
                 db.People.Add(customer);
@@ -59,6 +75,7 @@ namespace HomeCareService.Controllers
                 return RedirectToAction("Index");
             }
 
+            PopulateAddedServiceData(customer);
             return View(customer);
         }
 
@@ -84,6 +101,7 @@ namespace HomeCareService.Controllers
         {
             var allServices = db.Services;
             var customerServices = new HashSet<int>(customer.Services.Select(s => s.ID));
+
             var viewModel = new List<AddedServiceData>();
             foreach (var service in allServices)
             {
@@ -103,17 +121,21 @@ namespace HomeCareService.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "ID,Name,Address")] Customer customer, string[] selectedServices)
+        public async Task<ActionResult> Edit(int? id, string[] selectedServices)
         {
-            foreach(string service in selectedServices)
+            if (id == null)
             {
-                Debug.WriteLine(service);
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+            Customer customer = await db.Customers.FindAsync(id);
+
+            var customerServices = new HashSet<int>(customer.Services.Select(s => s.ID));
+
 
             if (ModelState.IsValid)
             {
                 db.Entry(customer).State = EntityState.Modified;
-                UpdateCustomerServices(selectedServices, customer);
+                UpdateCustomerServices(selectedServices, customer.ID);
                 await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
@@ -122,40 +144,41 @@ namespace HomeCareService.Controllers
             return View(customer);
         }
 
-        private void UpdateCustomerServices(string[] selectedServices, Customer customer)
+        private async void UpdateCustomerServices(string[] selectedServices, int? id)
         {
-            if(selectedServices == null)
+            Customer customer = await db.Customers.FindAsync(id);
+
+            if (selectedServices == null)
             {
                 customer.Services = new List<Service>();
                 return;
             }
 
             var selectedServiceHS = new HashSet<string>(selectedServices);
-            var customerServices = new HashSet<int>
-                (customer.Services.Select(s => s.ID));
+            var customerServices = new HashSet<int>(customer.Services.Select(s => s.ID));
 
-            Debug.WriteLine("how many services already added? " + customerServices.Count);
-
+            int price = customer.Payment;
             foreach(var service in db.Services)
             {
                 if(selectedServiceHS.Contains(service.ID.ToString()))
                 {
-                    Debug.WriteLine(service.ID.ToString() + " selected");
                     if(!customerServices.Contains(service.ID))
                     {
-                        Debug.WriteLine(service.ID.ToString() + " add new");
                         customer.Services.Add(service);
+                        price += service.Price;
                     }
                 }
                 else
                 {
                     if(customerServices.Contains(service.ID))
                     {
-                        Debug.WriteLine(service.ID.ToString() + " remove");
                         customer.Services.Remove(service);
+                        price -= service.Price;
                     }
                 }
             }
+
+            customer.Payment = price;
         }
 
         // GET: Customers/Delete/5

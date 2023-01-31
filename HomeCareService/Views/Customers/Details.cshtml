@@ -34,6 +34,20 @@
             @Html.DisplayFor(model => model.Payment)
         </dd>
 
+        <dt>
+            @Html.DisplayNameFor(model => model.Services)
+        </dt>
+        
+        <dd>
+            @{ 
+                foreach(var service in Model.Services)
+                {
+                @Html.DisplayFor(s => service.Name)<br/>
+               
+                }
+            }
+        </dd>
+
     </dl>
 </div>
 <p>
