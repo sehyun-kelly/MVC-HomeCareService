@@ -19,8 +19,7 @@ namespace HomeCareService.Controllers
         // GET: Employees
         public async Task<ActionResult> Index()
         {
-            var people = db.Employees.Include(e => e.services);
-            return View(await people.ToListAsync());
+            return View(await db.Employees.ToListAsync());
         }
 
         // GET: Employees/Details/5
@@ -41,7 +40,7 @@ namespace HomeCareService.Controllers
         // GET: Employees/Create
         public ActionResult Create()
         {
-            ViewBag.services_ID = new SelectList(db.Services, "ID", "Name");
+            ViewBag.services_id = new SelectList(db.Services, "ID", "Name");
             return View();
         }
 
@@ -50,7 +49,7 @@ namespace HomeCareService.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "ID,Name,Address,Salary,services_ID")] Employee employee)
+        public async Task<ActionResult> Create([Bind(Include = "ID,Name,Address,Salary,services")] Employee employee)
         {
             if (ModelState.IsValid)
             {
@@ -59,7 +58,7 @@ namespace HomeCareService.Controllers
                 return RedirectToAction("Index");
             }
 
-            ViewBag.services_ID = new SelectList(db.Services, "ID", "Name", employee.services_ID);
+            ViewBag.services_id = new SelectList(db.Services, "ID", "Name", employee.services);
             return View(employee);
         }
 
@@ -75,7 +74,6 @@ namespace HomeCareService.Controllers
             {
                 return HttpNotFound();
             }
-            ViewBag.services_ID = new SelectList(db.Services, "ID", "Name", employee.services_ID);
             return View(employee);
         }
 
@@ -84,7 +82,7 @@ namespace HomeCareService.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "ID,Name,Address,Salary,services_ID")] Employee employee)
+        public async Task<ActionResult> Edit([Bind(Include = "ID,Name,Address,Salary")] Employee employee)
         {
             if (ModelState.IsValid)
             {
@@ -92,7 +90,6 @@ namespace HomeCareService.Controllers
                 await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
-            ViewBag.services_ID = new SelectList(db.Services, "ID", "Name", employee.services_ID);
             return View(employee);
         }
 

@@ -23,6 +23,12 @@ namespace HomeCareService
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Customer>()
+            .HasMany(c => c.Services).WithMany(i => i.Customers)
+            .Map(t => t.MapLeftKey("Customer_ID")
+             .MapRightKey("Service_ID")
+                .ToTable("CustomerService"));
         }
 
     }

@@ -7,7 +7,7 @@
 <h2>Employee List</h2>
 
 <p>
-    @Html.ActionLink("Add a new Employee", "Create")
+    @Html.ActionLink("Add a New Employee", "Create")
 </p>
 <table class="table">
     <tr>
@@ -19,6 +19,9 @@
         </th>
         <th>
             @Html.DisplayNameFor(model => model.Salary)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.services.Name)
         </th>
         <th></th>
     </tr>
@@ -33,6 +36,9 @@
         </td>
         <td>
             @Html.DisplayFor(modelItem => item.Salary)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.services.Name)
         </td>
         <td>
             @Html.ActionLink("Edit", "Edit", new { id=item.ID }) |

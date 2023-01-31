@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace HomeCareService.Models
 {
@@ -13,10 +12,6 @@ namespace HomeCareService.Models
 
         public int Salary { get; set; }
 
-        [Display(Name = "Service")]
-        public int services_ID { get; set; }
-
-        [ForeignKey("services_ID")]
         public virtual Service services { get; set; }
     }
 }

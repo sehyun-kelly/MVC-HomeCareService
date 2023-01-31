@@ -9,6 +9,8 @@ using System.Web;
 using System.Web.Mvc;
 using HomeCareService;
 using HomeCareService.Models;
+using HomeCareService.ViewModels;
+using System.Diagnostics;
 
 namespace HomeCareService.Controllers
 {
@@ -48,7 +50,7 @@ namespace HomeCareService.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "ID,Name,Address,Payment")] Customer customer)
+        public async Task<ActionResult> Create([Bind(Include = "ID,Name,Address")] Customer customer)
         {
             if (ModelState.IsValid)
             {
@@ -68,11 +70,32 @@ namespace HomeCareService.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
             Customer customer = await db.Customers.FindAsync(id);
+
             if (customer == null)
             {
                 return HttpNotFound();
             }
+
+            PopulateAddedServiceData(customer);
             return View(customer);
+        }
+
+        private void PopulateAddedServiceData(Customer customer)
+        {
+            var allServices = db.Services;
+            var customerServices = new HashSet<int>(customer.Services.Select(s => s.ID));
+            var viewModel = new List<AddedServiceData>();
+            foreach (var service in allServices)
+            {
+                viewModel.Add(new AddedServiceData
+                {
+                    ServiceID = service.ID,
+                    Name = service.Name,
+                    Assigned = customerServices.Contains(service.ID)
+                });
+            }
+
+            ViewBag.Services = viewModel;
         }
 
         // POST: Customers/Edit/5
@@ -80,15 +103,59 @@ namespace HomeCareService.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "ID,Name,Address,Payment")] Customer customer)
+        public async Task<ActionResult> Edit([Bind(Include = "ID,Name,Address")] Customer customer, string[] selectedServices)
         {
+            foreach(string service in selectedServices)
+            {
+                Debug.WriteLine(service);
+            }
+
             if (ModelState.IsValid)
             {
                 db.Entry(customer).State = EntityState.Modified;
+                UpdateCustomerServices(selectedServices, customer);
                 await db.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
+
+            PopulateAddedServiceData(customer);
             return View(customer);
+        }
+
+        private void UpdateCustomerServices(string[] selectedServices, Customer customer)
+        {
+            if(selectedServices == null)
+            {
+                customer.Services = new List<Service>();
+                return;
+            }
+
+            var selectedServiceHS = new HashSet<string>(selectedServices);
+            var customerServices = new HashSet<int>
+                (customer.Services.Select(s => s.ID));
+
+            Debug.WriteLine("how many services already added? " + customerServices.Count);
+
+            foreach(var service in db.Services)
+            {
+                if(selectedServiceHS.Contains(service.ID.ToString()))
+                {
+                    Debug.WriteLine(service.ID.ToString() + " selected");
+                    if(!customerServices.Contains(service.ID))
+                    {
+                        Debug.WriteLine(service.ID.ToString() + " add new");
+                        customer.Services.Add(service);
+                    }
+                }
+                else
+                {
+                    if(customerServices.Contains(service.ID))
+                    {
+                        Debug.WriteLine(service.ID.ToString() + " remove");
+                        customer.Services.Remove(service);
+                    }
+                }
+            }
         }
 
         // GET: Customers/Delete/5
