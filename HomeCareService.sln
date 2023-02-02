@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeCareService", "HomeCareService\HomeCareService.csproj", "{20A2F4EF-16FE-42D6-AA4E-D6B9F9C55EE9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeCareServiceTests", "HomeCareServiceTests\HomeCareServiceTests.csproj", "{23E80656-FE08-4C2D-BA6F-0E068C02850A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HomeCareService.Tests", "HomeCareServiceTests\HomeCareService.Tests.csproj", "{23E80656-FE08-4C2D-BA6F-0E068C02850A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
