@@ -103,6 +103,10 @@ namespace HomeCareService.Controllers
             {
                 return HttpNotFound();
             }
+            if (db.Services.Count<Service>() <= 1)
+            {
+                return RedirectToAction("Index");
+            }
             return View(service);
         }
 
@@ -112,9 +116,31 @@ namespace HomeCareService.Controllers
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
             Service service = await db.Services.FindAsync(id);
+            UpdateEmployeesAndCustomers(service);
             db.Services.Remove(service);
             await db.SaveChangesAsync();
             return RedirectToAction("Index");
+        }
+
+        private async void UpdateEmployeesAndCustomers(Service service)
+        {
+            foreach (var customer in db.Customers)
+            {
+                var customerServices = new HashSet<int>(customer.Services.Select(s => s.ID));
+                if (customerServices.Contains(service.ID))
+                {
+                    customer.Services.Remove(service);
+                    customer.Payment -= service.Price;
+                }
+            }
+
+            foreach (var employee in db.Employees)
+            {
+                if (employee.services.ID == service.ID)
+                {
+                    employee.services = db.Services.First<Service>();
+                }
+            }
         }
 
         protected override void Dispose(bool disposing)
