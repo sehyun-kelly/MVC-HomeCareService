@@ -57,6 +57,7 @@
                                 <input type="checkbox"
                                        name="selectedServices"
                                        value="@service.ServiceID"
+                                       id="@service.Name"
                                        @(Html.Raw(service.Assigned ? "checked=\"checked\"" : "")) />
                                 @service.Name
                             @:</td>
