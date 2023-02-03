@@ -151,23 +151,21 @@ namespace HomeCareService.Controllers
             if (selectedServices == null)
             {
                 customer.Services = new List<Service>();
+                customer.Payment = 0;
                 return;
             }
 
             var selectedServiceHS = new HashSet<string>(selectedServices);
             var customerServices = new HashSet<int>(customer.Services.Select(s => s.ID));
-            customerServices.Clear();
+            customer.Services = new List<Service>();
 
             int price = 0;
             foreach (var service in db.Services)
             {
                 if (selectedServiceHS.Contains(service.ID.ToString()))
                 {
-                    if (!customerServices.Contains(service.ID))
-                    {
-                        customer.Services.Add(service);
-                        price += service.Price;
-                    }
+                    customer.Services.Add(service);
+                    price += service.Price;
                 }
             }
 
